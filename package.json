@@ -1,0 +1,21 @@
+{
+  "name": "funchatserver",
+  "version": "1.0.0",
+  "description": "Chat room with socket.io and React Native and chatrooms",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server",
+    "dev": "nodemon server"
+  },
+  "author": "Julia Werner",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.7.9",
+    "express": "^4.17.1",
+    "funchatserver": "file:",
+    "moment": "^2.27.0",
+    "mysql": "^2.18.1",
+    "pg": "^8.13.1",
+    "socket.io": "^4.8.1"
+  }
+}

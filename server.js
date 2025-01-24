@@ -14,9 +14,6 @@ io.on('connection',socket =>{
         io.emit('message', user,msg,room);
     });
 
-    socket.on('joinRoom',(user,room) =>{
-        io.emit('joinRoom', user, room);
-    });
     socket.on('disconnect',() =>{
         console.log('user disconnected');
     });

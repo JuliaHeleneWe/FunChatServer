@@ -4,7 +4,7 @@
   "description": "Chat room with socket.io and React Native and chatrooms",
   "main": "server.js",
   "scripts": {
-    "start": "node server",
+    "start": "set DEBUG=* & node server",
     "dev": "nodemon server"
   },
   "author": "Julia Werner",
@@ -12,7 +12,9 @@
   "dependencies": {
     "axios": "^1.7.9",
     "express": "^4.17.1",
+    "fs": "^0.0.1-security",
     "funchatserver": "file:",
+    "https": "^1.0.0",
     "moment": "^2.27.0",
     "mysql": "^2.18.1",
     "pg": "^8.13.1",

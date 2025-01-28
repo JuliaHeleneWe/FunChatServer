@@ -57,6 +57,28 @@ io.on('connection',socket =>{
             io.to(room).emit('message', user, msg, getTimestamp(), room);
         }
     });
+
+    socket.on('botJoin', (room) => {
+        if(isValidRoomToJoin(room, socket.rooms)) {
+            socket.join(room);
+        }
+    });
+    socket.on('botLeave', (room) => {
+        if(isValidRoomToChat(room, socket.rooms)) {
+            socket.leave(room);
+        }
+    });
+    socket.on('botMessage', (user, msg, room) => {
+        if(isValidRoomToChat(room, socket.rooms) && !msg.includes('spawn') && !msg.includes('ciao')) {
+            io.to(room).emit('message', user + ' (BOT)', msg, getTimestamp(), room);
+        }
+    });
+    socket.on('botMessageAll', (user, msg, room) => {
+        if(isValidRoomToChat(room, socket.rooms) && !msg.includes('spawn') && !msg.includes('ciao')) {
+            io.emit('message', user + ' (BOT)', msg, getTimestamp(), room);
+        }
+    });
+
     socket.on('disconnect',() => {
         console.log('user disconnected');
     });

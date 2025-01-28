@@ -2,10 +2,10 @@ const express = require('express');
 const https=require('https');
 const socketio=require('socket.io');
 const fs=require('fs');
-const { roomData, roomDataArray } = require('./roomData');
+const { roomData, roomDataArray, isValidRoomToJoin, isValidRoomToChat } = require('./roomData');
 
-const cert = fs.readFileSync("./prod/cert.pem");
-const key = fs.readFileSync("./prod/key.pem");
+const cert = fs.readFileSync("./debug/cert.pem");
+const key = fs.readFileSync("./debug/key.pem");
 const app = express();
 const server = https.createServer({
     key: key,
@@ -38,23 +38,24 @@ io.on('connection',socket =>{
     console.log('New user connection');
 
     socket.on('joinRoom', (user, room) => {
-        if(roomData.hasOwnProperty(room)) {
+        if(isValidRoomToJoin(room, socket.rooms)) {
             socket.join(room);
             const joinMessage = user + ' ist beigetreten.';
             io.to(room).emit('message', 'System', joinMessage, getTimestamp(), room);
         }
     });
     socket.on('leaveRoom', (user, room) => {
-        if(roomData.hasOwnProperty(room)) {
+        if(isValidRoomToChat(room, socket.rooms)) {
             const leaveMessage = user + ' hat den Raum verlassen.';
-            io.to(room).emit('message', 'System', leaveMessage, getTimestamp(), room);
+            io.to(room).emit('message', 'System', leaveMessage, getTimestamp(), room, () => {
+                socket.leave(room);
+            });
         }
     });
     socket.on('message', (user, msg, room) => {
-        if(roomData.hasOwnProperty(room) && !msg.includes('spawn') && !msg.includes('ciao')) {
+        if(isValidRoomToChat(room, socket.rooms) && !msg.includes('spawn') && !msg.includes('ciao')) {
             io.to(room).emit('message', user, msg, getTimestamp(), room);
         }
-        
     });
     socket.on('disconnect',() => {
         console.log('user disconnected');

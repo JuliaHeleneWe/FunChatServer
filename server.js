@@ -2,7 +2,7 @@ const express = require('express');
 const https=require('https');
 const socketio=require('socket.io');
 const fs=require('fs');
-const { roomData, roomDataArray, isValidRoomToJoin, isValidRoomToChat } = require('./roomData');
+const { isValidRoomToJoin, isValidRoomToChat } = require('./roomData');
 
 const cert = fs.readFileSync("./prod/cert.pem");
 const key = fs.readFileSync("./prod/key.pem");
@@ -15,7 +15,14 @@ const server = https.createServer({
     secure: true
 }, app);
 
-const io = socketio(server);
+const io = socketio(server, {
+    pingInterval: 5 * 60 * 1000,
+    pingTimeout: 5 * 60 * 1000,
+    connectionStateRecovery: {
+        maxDisconnectionDuration: 5 * 60 * 1000,
+        skipMiddlewares: true
+    }
+});
 
 const validate = (headers) => {
     return (headers.hasOwnProperty(process.env.EXTRA_HEADER_KEY) && headers[process.env.EXTRA_HEADER_KEY] === process.env.EXTRA_HEADER);
@@ -53,7 +60,10 @@ io.on('connection',socket =>{
         }
     });
     socket.on('message', (user, msg, room) => {
-        if(isValidRoomToChat(room, socket.rooms) && !msg.includes('spawn') && !msg.includes('ciao')) {
+        if(isValidRoomToChat(room, socket.rooms)) {
+            io.to(room).emit('message', user, msg, getTimestamp(), room);
+        } else {
+            socket.join(room);
             io.to(room).emit('message', user, msg, getTimestamp(), room);
         }
     });
@@ -69,12 +79,15 @@ io.on('connection',socket =>{
         }
     });
     socket.on('botMessage', (user, msg, room) => {
-        if(isValidRoomToChat(room, socket.rooms) && !msg.includes('spawn') && !msg.includes('ciao')) {
+        if(isValidRoomToChat(room, socket.rooms)) {
+            io.to(room).emit('message', user + ' (BOT)', msg, getTimestamp(), room);
+        } else {
+            socket.join(room);
             io.to(room).emit('message', user + ' (BOT)', msg, getTimestamp(), room);
         }
     });
     socket.on('botMessageAll', (user, msg, room) => {
-        if(isValidRoomToChat(room, socket.rooms) && !msg.includes('spawn') && !msg.includes('ciao')) {
+        if(isValidRoomToChat(room, socket.rooms)) {
             io.emit('message', user + ' (BOT)', msg, getTimestamp(), room);
         }
     });

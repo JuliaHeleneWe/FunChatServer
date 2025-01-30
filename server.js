@@ -30,7 +30,7 @@ const validate = (headers) => {
 
 const getTimestamp = () => {
     const currentDate = new Date();
-    return currentDate.toISOString().substring(11,19);
+    return currentDate.toLocaleTimeString();
 }
 
 /*io.use((socket, next) => { 

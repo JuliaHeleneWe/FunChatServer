@@ -43,7 +43,6 @@ const getTimestamp = () => {
 
 io.on('connection',socket =>{
     console.log('New user connection');
-    socket.setEncoding('utf-8');
 
     socket.on('joinRoom', (user, room) => {
         if(isValidRoomToJoin(room, socket.rooms)) {

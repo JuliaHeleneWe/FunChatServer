@@ -12,14 +12,17 @@ const server = https.createServer({
     cert:cert,
     requestCert: true,
     rejectUnauthorized: false,
-    secure: true
+    secure: true,
+    cors: {
+      origin: ['http://localhost:8081']
+    }
 }, app);
 
 const io = socketio(server, {
-    pingInterval: 5 * 60 * 1000,
-    pingTimeout: 5 * 60 * 1000,
+    pingInterval: 8 * 60 * 1000,
+    pingTimeout: 8 * 60 * 1000,
     connectionStateRecovery: {
-        maxDisconnectionDuration: 5 * 60 * 1000,
+        maxDisconnectionDuration: 10 * 60 * 1000,
         skipMiddlewares: true
     }
 });
@@ -43,6 +46,7 @@ const getTimestamp = () => {
 
 io.on('connection',socket =>{
     console.log('New user connection');
+    socket.setEncoding('utf-8');
 
     socket.on('joinRoom', (user, room) => {
         if(isValidRoomToJoin(room, socket.rooms)) {

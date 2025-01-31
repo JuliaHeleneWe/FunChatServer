@@ -14,7 +14,7 @@ const server = https.createServer({
     rejectUnauthorized: false,
     secure: true,
     cors: {
-      origin: ['http://localhost:8081']
+      origin: '*'
     }
 }, app);
 

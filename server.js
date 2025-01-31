@@ -12,10 +12,7 @@ const server = https.createServer({
     cert:cert,
     requestCert: true,
     rejectUnauthorized: false,
-    secure: true,
-    cors: {
-      origin: '*'
-    }
+    secure: true
 }, app);
 
 const io = socketio(server, {

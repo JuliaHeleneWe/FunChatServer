@@ -4,8 +4,8 @@ const socketio=require('socket.io');
 const fs=require('fs');
 const { isValidRoomToJoin, isValidRoomToChat } = require('./roomData');
 
-const cert = fs.readFileSync("./debug/cert.pem");
-const key = fs.readFileSync("./debug/key.pem");
+const cert = fs.readFileSync("./prod/cert.pem");
+const key = fs.readFileSync("./prod/key.pem");
 const app = express();
 const server = https.createServer({
     key: key,

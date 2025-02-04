@@ -4,8 +4,8 @@ const socketio=require('socket.io');
 const fs=require('fs');
 const { isValidRoomToJoin, isValidRoomToChat } = require('./roomData');
 
-const cert = fs.readFileSync("./prod/cert.pem");
-const key = fs.readFileSync("./prod/key.pem");
+const cert = fs.readFileSync("./debug/cert.pem");
+const key = fs.readFileSync("./debug/key.pem");
 const app = express();
 const server = https.createServer({
     key: key,
@@ -16,8 +16,8 @@ const server = https.createServer({
 }, app);
 
 const io = socketio(server, {
-    pingInterval: 8 * 60 * 1000,
-    pingTimeout: 8 * 60 * 1000,
+    pingInterval: 5 * 60 * 1000,
+    pingTimeout: 5 *60 * 1000,
     connectionStateRecovery: {
         maxDisconnectionDuration: 10 * 60 * 1000,
         skipMiddlewares: true
@@ -30,16 +30,8 @@ const validate = (headers) => {
 
 const getTimestamp = () => {
     const currentDate = new Date();
-    return currentDate.toLocaleTimeString();
+    return currentDate.toLocaleString();
 }
-
-/*io.use((socket, next) => { 
-    if (validate(socket.request.headers)) {
-        next();
-    } else {
-        next(new Error("invalid Header"));
-    }
-});*/
 
 io.on('connection',socket =>{
     console.log('New user connection');
@@ -68,6 +60,38 @@ io.on('connection',socket =>{
         }
     });
 
+    socket.on('fetchMissedMessages', async (room, latestMsg, callback) => {
+        let socketsOfRoom = await io.in(room).fetchSockets();
+        let foundConSocket = false;
+        for(let i = 0; i < socketsOfRoom.length; i++) {
+            let otherSocket = socketsOfRoom[i];
+            if(otherSocket !== socket && otherSocket.connected) {
+                foundConSocket = true;
+                socket.join(socket.id);
+                io.to(otherSocket.id).emit('sendMessagesAfterTimestamp', room, latestMsg, socket.id, callback);
+                break;
+            }
+        }
+        if(foundConSocket === false && callback != null) {
+            callback();
+        }
+    });
+
+    socket.on('sendMissedMessages', (messages, room, socketId, callback) => {
+        for(let i = 0; i < messages.length; i++) {
+            let message = messages[i];
+            io.to(socketId).emit('message', message.user, message.message, message.timestamp, room);
+        }
+        if(callback != null) {
+            callback();
+        }
+    });
+    socket.on('silentJoin', (room) => {
+        if(isValidRoomToJoin(room, socket.rooms)) {
+            socket.join(room);
+        }
+    });
+
     socket.on('botJoin', (room) => {
         if(isValidRoomToJoin(room, socket.rooms)) {
             socket.join(room);
@@ -92,8 +116,8 @@ io.on('connection',socket =>{
         }
     });
 
-    socket.on('disconnect',() => {
-        console.log('user disconnected');
+    socket.on('disconnect',(error) => {
+        console.log('user disconnected', error);
     });
     socket.on('connect_error',(err) => {
         console.log(err);

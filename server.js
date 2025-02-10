@@ -100,13 +100,17 @@ io.on('connection',socket =>{
     socket.on('botJoin', (room, callback) => {
         if(isValidRoomToJoin(room, socket.rooms)) {
             socket.join(room);
-            callback();
+            if(callback != null) {
+                callback();
+            }
         }
     });
     socket.on('botLeave', (room, callback) => {
         if(isValidRoomToChat(room, socket.rooms)) {
             socket.leave(room);
-            callback();
+            if(callback != null) {
+                callback();
+            }
         }
     });
     socket.on('botMessage', (user, msg, room, callback) => {
@@ -115,7 +119,9 @@ io.on('connection',socket =>{
                 user.replace('botbot','gaslightingbot');
             }
             io.to(room).emit('message', user + ' (BOT)', msg, getTimestamp(), room, 'bot');
-            callback();
+            if(callback != null) {
+                callback();
+            }
         }
     });
     socket.on('botMessageAll', (user, msg, room, callback) => {
@@ -124,7 +130,9 @@ io.on('connection',socket =>{
         }
         if(isValidRoomToChat(room, socket.rooms)) {
             io.emit('message', user + ' (BOT)', msg, getTimestamp(), room, 'bot');
-            callback();
+            if(callback != null) {
+                callback();
+            }
         }
     });
 

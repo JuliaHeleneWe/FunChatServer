@@ -51,7 +51,7 @@ io.on('connection',socket =>{
         }
     });
     socket.on('message', (user, msg, room, type, callback) => {
-        if(user.includes('botbot')){
+        if(user != null && user.includes('botbot')){
             user.replace('botbot','gaslightingbot');
         }
         if(isValidRoomToChat(room, socket.rooms)) {
@@ -117,7 +117,7 @@ io.on('connection',socket =>{
     });
     socket.on('botMessage', (user, msg, room, callback) => {
         if(isValidRoomToChat(room, socket.rooms)) {
-            if(user.includes('botbot')){
+            if(user != null && user.includes('botbot')){
                 user.replace('botbot','gaslightingbot');
             }
             io.to(room).emit('message', user + ' (BOT)', msg, getTimestamp(), room, 'bot');
@@ -127,7 +127,7 @@ io.on('connection',socket =>{
         }
     });
     socket.on('botMessageAll', (user, msg, room, callback) => {
-        if(user.includes('botbot')){
+        if(user != null && user.includes('botbot')){
             user.replace('botbot','gaslightingbot');
         }
         if(isValidRoomToChat(room, socket.rooms)) {

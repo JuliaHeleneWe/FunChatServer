@@ -93,7 +93,9 @@ io.on('connection',socket =>{
     socket.on('silentJoin', (room, callback) => {
         if(isValidRoomToJoin(room, socket.rooms)) {
             socket.join(room);
-            callback();
+            if(callback != null) {
+                callback();
+            }
         }
     });
 

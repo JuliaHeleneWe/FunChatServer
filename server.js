@@ -94,6 +94,8 @@ io.on('connection',socket =>{
         if(isValidRoomToJoin(room, socket.rooms)) {
             socket.join(room);
             callback();
+        } else {
+            callback();
         }
     });
 

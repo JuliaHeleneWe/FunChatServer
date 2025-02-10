@@ -10,6 +10,9 @@ export const roomData = {
     },
     4: {
         label:'Putzen'
+    },
+    5: {
+        label:'Bot-Ping'
     }
 };
 

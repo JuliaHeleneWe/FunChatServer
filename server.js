@@ -2,6 +2,7 @@ const express = require('express');
 const https=require('https');
 const socketio=require('socket.io');
 const fs=require('fs');
+const pg=require('pg');
 const { isValidRoomToJoin, isValidRoomToChat } = require('./roomData');
 
 const cert = fs.readFileSync("./prod/cert.pem");
@@ -19,14 +20,10 @@ const io = socketio(server, {
     pingInterval: 5 * 60 * 1000,
     pingTimeout: 5 *60 * 1000,
     connectionStateRecovery: {
-        maxDisconnectionDuration: 10 * 60 * 1000,
+        maxDisconnectionDuration: 2 * 60 * 1000,
         skipMiddlewares: true
     }
 });
-
-const validate = (headers) => {
-    return (headers.hasOwnProperty(process.env.EXTRA_HEADER_KEY) && headers[process.env.EXTRA_HEADER_KEY] === process.env.EXTRA_HEADER);
-}
 
 const getTimestamp = () => {
     const currentDate = new Date();
@@ -36,28 +33,35 @@ const getTimestamp = () => {
 io.on('connection',socket =>{
     console.log('New user connection');
 
-    socket.on('joinRoom', (user, room) => {
+    socket.on('joinRoom', (user, room, callback) => {
         if(isValidRoomToJoin(room, socket.rooms)) {
             socket.join(room);
             const joinMessage = user + ' ist beigetreten.';
-            io.to(room).emit('message', 'System', joinMessage, getTimestamp(), room);
+            io.to(room).emit('message', 'System', joinMessage, getTimestamp(), room, 'system');
+            callback();
         }
     });
-    socket.on('leaveRoom', (user, room) => {
+    socket.on('leaveRoom', (user, room, callback) => {
         if(isValidRoomToChat(room, socket.rooms)) {
             const leaveMessage = user + ' hat den Raum verlassen.';
-            io.to(room).emit('message', 'System', leaveMessage, getTimestamp(), room, () => {
+            io.to(room).emit('message', 'System', leaveMessage, getTimestamp(), room, 'system', () => {
                 socket.leave(room);
+                callback();
             });
         }
     });
-    socket.on('message', (user, msg, room) => {
-        if(isValidRoomToChat(room, socket.rooms)) {
-            io.to(room).emit('message', user, msg, getTimestamp(), room);
-        } else {
-            socket.join(room);
-            io.to(room).emit('message', user, msg, getTimestamp(), room);
+    socket.on('message', (user, msg, room, type, callback) => {
+        if(user.includes('botbot')){
+            user.replace('botbot','gaslightingbot');
         }
+        if(isValidRoomToChat(room, socket.rooms)) {
+            io.to(room).emit('message', user, msg, getTimestamp(), room, type);
+            callback({status: 'ok'});
+        }
+        else {
+            callback({status: 'error'});
+        }
+        //TODO: send ack on response or error if not
     });
 
     socket.on('fetchMissedMessages', async (room, latestMsg, callback) => {
@@ -80,7 +84,7 @@ io.on('connection',socket =>{
     socket.on('sendMissedMessages', (messages, room, socketId, callback) => {
         for(let i = 0; i < messages.length; i++) {
             let message = messages[i];
-            io.to(socketId).emit('message', message.user, message.message, message.timestamp, room);
+            io.to(socketId).emit('message', message.user, message.message, message.timestamp, room, message.type);
         }
         if(callback != null) {
             callback();
@@ -104,15 +108,18 @@ io.on('connection',socket =>{
     });
     socket.on('botMessage', (user, msg, room) => {
         if(isValidRoomToChat(room, socket.rooms)) {
-            io.to(room).emit('message', user + ' (BOT)', msg, getTimestamp(), room);
-        } else {
-            socket.join(room);
-            io.to(room).emit('message', user + ' (BOT)', msg, getTimestamp(), room);
+            if(user.includes('botbot')){
+                user.replace('botbot','gaslightingbot');
+            }
+            io.to(room).emit('message', user + ' (BOT)', msg, getTimestamp(), room, 'bot');
         }
     });
     socket.on('botMessageAll', (user, msg, room) => {
+        if(user.includes('botbot')){
+            user.replace('botbot','gaslightingbot');
+        }
         if(isValidRoomToChat(room, socket.rooms)) {
-            io.emit('message', user + ' (BOT)', msg, getTimestamp(), room);
+            io.emit('message', user + ' (BOT)', msg, getTimestamp(), room, 'bot');
         }
     });
 

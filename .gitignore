@@ -134,3 +134,7 @@ debug/*
 prod/*
 *.pem
 ssl-commands.txt
+
+# files
+files/*
+dbClient.js

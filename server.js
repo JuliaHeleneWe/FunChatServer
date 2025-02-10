@@ -54,9 +54,8 @@ io.on('connection',socket =>{
         if(user != null && user.includes('botbot')){
             user = user.replace('botbot','gaslightingbot');
         }
-        console.log('user',user);
         if(isValidRoomToChat(room, socket.rooms)) {
-            io.to(room).emit('message', user.replace('botbot','gaslightingbot'), msg, getTimestamp(), room, type);
+            io.to(room).emit('message', user, msg, getTimestamp(), room, type);
             callback({status: 'ok'});
         }
         else {
@@ -119,7 +118,6 @@ io.on('connection',socket =>{
             if(user != null &&user.includes('botbot')){
                 user = user.replace('botbot','gaslightingbot');
             }
-            console.log('user',user);
             io.to(room).emit('message', user + ' (BOT)', msg, getTimestamp(), room, 'bot');
             if(callback != null) {
                 callback();
@@ -130,9 +128,8 @@ io.on('connection',socket =>{
         if(user != null && user.includes('botbot')){
             user = user.replace('botbot','gaslightingbot');
         }
-        console.log('user',user);
         if(isValidRoomToChat(room, socket.rooms)) {
-            io.emit('message', user.replace('botbot','gaslightingbot') + ' (BOT)', msg, getTimestamp(), room, 'bot');
+            io.emit('message', user + ' (BOT)', msg, getTimestamp(), room, 'bot');
             if(callback != null) {
                 callback();
             }

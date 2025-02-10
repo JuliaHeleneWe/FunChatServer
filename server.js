@@ -90,9 +90,10 @@ io.on('connection',socket =>{
             callback();
         }
     });
-    socket.on('silentJoin', (room) => {
+    socket.on('silentJoin', (room, callback) => {
         if(isValidRoomToJoin(room, socket.rooms)) {
             socket.join(room);
+            callback();
         }
     });
 

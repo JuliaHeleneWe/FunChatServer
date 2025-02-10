@@ -99,42 +99,30 @@ io.on('connection',socket =>{
         }
     });
 
-    socket.on('botJoin', (room, callback) => {
+    socket.on('botJoin', (room) => {
         if(isValidRoomToJoin(room, socket.rooms)) {
             socket.join(room);
-            if(callback != null) {
-                callback();
-            }
         }
     });
-    socket.on('botLeave', (room, callback) => {
+    socket.on('botLeave', (room) => {
         if(isValidRoomToChat(room, socket.rooms)) {
             socket.leave(room);
-            if(callback != null) {
-                callback();
-            }
         }
     });
-    socket.on('botMessage', (user, msg, room, callback) => {
+    socket.on('botMessage', (user, msg, room) => {
         if(isValidRoomToChat(room, socket.rooms)) {
             if(user != null && user.includes('botbot')){
                 user.replace('botbot','gaslightingbot');
             }
             io.to(room).emit('message', user + ' (BOT)', msg, getTimestamp(), room, 'bot');
-            if(callback != null) {
-                callback();
-            }
         }
     });
-    socket.on('botMessageAll', (user, msg, room, callback) => {
+    socket.on('botMessageAll', (user, msg, room) => {
         if(user != null && user.includes('botbot')){
             user.replace('botbot','gaslightingbot');
         }
         if(isValidRoomToChat(room, socket.rooms)) {
             io.emit('message', user + ' (BOT)', msg, getTimestamp(), room, 'bot');
-            if(callback != null) {
-                callback();
-            }
         }
     });
 
